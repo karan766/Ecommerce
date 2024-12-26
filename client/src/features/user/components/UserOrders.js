@@ -4,14 +4,17 @@ import {
   fetchLoggedInUserOrderAsync,
   selectUserInfo,
   selectUserOrders,
+  selectUserStatus,
 } from "../userSlice";
 import { discountedPrice } from "../../../app/constants";
 import { Link } from "react-router-dom";
+import { RotatingLines } from "react-loader-spinner";
 
 export default function UserOrders() {
   const dispatch = useDispatch();
   const userInfo = useSelector(selectUserInfo);
   const orders = useSelector(selectUserOrders);
+  const status = useSelector(selectUserStatus);
 
   useEffect(() => {
     dispatch(fetchLoggedInUserOrderAsync(userInfo.id));
@@ -120,6 +123,19 @@ export default function UserOrders() {
           </div>
         ))
       )}
+      {status === "loading" ? (
+                  <RotatingLines
+                    visible={true}
+                    height="96"
+                    width="96"
+                    color="#4fa94d"
+                    strokeWidth="5"
+                    animationDuration="0.75"
+                    ariaLabel="rotating-lines-loading"
+                    wrapperStyle={{}}
+                    wrapperClass=""
+                  />
+                ) : null}
     </div>
   );
 }

@@ -18,9 +18,11 @@ import { discountedPrice } from "../app/constants";
 import { toast } from "react-toastify";
 import NavBar from "../features/navbar/Navbar";
 import "react-toastify/dist/ReactToastify.css";
+import { selectUserChecked } from "../features/auth/authSlice";
 
 function Checkout() {
   const dispatch = useDispatch();
+  const userChecked = useSelector(selectUserChecked);
   const {
     register,
     handleSubmit,
@@ -69,7 +71,7 @@ function Checkout() {
         status: "pending", // other status can be delivered, received.
       };
       dispatch(createOrderAsync(order));
-      toast.success("Order Placed");
+     
       // need to redirect from here to a new page of order success.
     } else {
       // TODO : we can use proper messaging popup here
@@ -83,14 +85,18 @@ function Checkout() {
 
   return (
     <>
+    
       <NavBar>
-        {!items.length && <Navigate to="/" replace={true}></Navigate>}
-        {currentOrder && (
-          <Navigate
-            to={`/order-success/${currentOrder.id}`}
-            replace={true}
-          ></Navigate>
-        )}
+        {!items.length && !userChecked && <Navigate to="/" replace={true}></Navigate>}
+      {currentOrder && (
+  currentOrder.paymentMethod === "cash" ? (
+    <Navigate to={`/order-success/${currentOrder.id}`} replace={true} />
+  ) : currentOrder.paymentMethod === "card" ? (
+    <Navigate to={`/stripe-checkout/`} replace={true} />
+  ) : null
+)}
+
+
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-5">
             <div className="lg:col-span-3">
@@ -102,7 +108,7 @@ function Checkout() {
                   dispatch(
                     updateUserAsync({
                       ...user,
-                      addresses: [...user.addresses, data],
+                      addresses: [...user?.addresses, data],
                     })
                   );
                   reset();
@@ -315,14 +321,14 @@ function Checkout() {
                   Choose from Existing addresses
                 </p>
                 <ul>
-                  {user.addresses.map((address, index) => (
+                  {user?.addresses.map((address, index) => (
                     <li
                       key={index}
-                      className="border-solid border-2 border-gray-200 my-4 rounded-lg"
+                      className="border-solid  border-gray-200 my-4 rounded-lg"
                     >
                       <label
                         htmlFor={index}
-                        className="flex justify-between items-center rounded-lg p-4"
+                        className="flex justify-between bg-white items-center rounded-lg p-4"
                       >
                         <div className="flex items-center mx-4 gap-6">
                           <input
@@ -366,8 +372,12 @@ function Checkout() {
                     <p className="mt-1 text-sm leading-6 text-gray-600">
                       Choose One
                     </p>
-                    <div className="mt-6 space-y-6">
-                      <div className="flex items-center gap-x-3">
+                    <div className="mt-6 space-y-6  ">
+                    <label
+                          htmlFor="cash"
+                          className="block text-sm font-medium leading-6 text-gray-900"
+                        >
+                      <div className="flex items-center gap-x-3 bg-white p-6 rounded-lg border-gray-200">
                         <input
                           id="cash"
                           name="payments"
@@ -377,14 +387,16 @@ function Checkout() {
                           checked={paymentMethod === "cash"}
                           className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                         />
+                        
+                          Cash
+                      </div>
+                        </label>
                         <label
-                          htmlFor="cash"
+                          htmlFor="card"
                           className="block text-sm font-medium leading-6 text-gray-900"
                         >
-                          Cash
-                        </label>
-                      </div>
-                      <div className="flex items-center gap-x-3">
+                      <div className="flex items-center gap-x-3 bg-white p-6 rounded-lg border-gray-200">
+                        
                         <input
                           id="card"
                           onChange={handlePayment}
@@ -394,13 +406,10 @@ function Checkout() {
                           type="radio"
                           className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
                         />
-                        <label
-                          htmlFor="card"
-                          className="block text-sm font-medium leading-6 text-gray-900"
-                        >
+                       
                           Card Payment
-                        </label>
                       </div>
+                        </label>
                     </div>
                   </fieldset>
                 </div>
@@ -448,9 +457,9 @@ function Checkout() {
                                   onChange={(e) => handleQuantity(e, item)}
                                   value={item.quantity}
                                 >
-                                  {[...Array(item.stock).keys()].map((x) => (
-                                    <option value={x + 1} key={x}>{x + 1}</option>
-                                  ))}
+                                  {[...Array(item.product.stock).keys()].map((x) => (
+                                <option value={x + 1} key={x}>{x + 1}</option>
+                              ))}
                                 </select>
                               </div>
 

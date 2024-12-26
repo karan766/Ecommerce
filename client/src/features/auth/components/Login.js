@@ -1,18 +1,25 @@
 import { useSelector, useDispatch } from "react-redux";
-import { selectError, selectLoggedInUser } from "../authSlice";
+import { selectAuthError, selectLoggedInUser, resetUser, resetUserError , loginUserAsync} from "../authSlice";
 import { Link, Navigate } from "react-router-dom";
-import { checkUserAsync } from "../authSlice";
+
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 export default function Login() {
   const dispatch = useDispatch();
-  const error = useSelector(selectError);
+  const error = useSelector(selectAuthError);
   const user = useSelector(selectLoggedInUser);
+  
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+  useEffect(() => {
+    dispatch(resetUser());
+    dispatch(resetUserError());
+  }, [dispatch]);
 
   return (
     <>
@@ -34,7 +41,7 @@ export default function Login() {
             noValidate
             onSubmit={handleSubmit((data) => {
               dispatch(
-                checkUserAsync({ email: data.email, password: data.password })
+                loginUserAsync({ email: data.email, password: data.password })
               );
             })}
             className="space-y-6"
@@ -94,8 +101,9 @@ export default function Login() {
                 {errors.password && (
                   <p className="text-red-500">{errors.password.message}</p>
                 )}
+                {error && <p className="text-red-500">{error.message}</p>}
               </div>
-              {error && <p className="text-red-500">{error.message}</p>}
+              {error && <p className="text-red-500">{error || error.message}</p>}
             </div>
 
             <div>

@@ -2,10 +2,11 @@
 import User from "../models/UserModel.js";
 
 export const fetchUserById = async (req, res) => {
-    const {id} = req.params
+    const {id} = req.user
    
   try {
     const user = await User.findById(id ,"name email role addresses");
+    
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });

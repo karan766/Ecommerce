@@ -1,12 +1,19 @@
-import { Link } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import {useDispatch, useSelector} from 'react-redux';
+import { resetPasswordRequestAsync, selectMailSent } from '../authSlice';
 
 export default function ForgotPassword() {
+
+ const mailSent = useSelector(selectMailSent);
+  const dispatch = useDispatch()
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+  console.log(errors);
 
   return (
     <>
@@ -14,7 +21,7 @@ export default function ForgotPassword() {
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <img
             className="mx-auto h-10 w-auto"
-            src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+            src="/../../logo.png"
             alt="Your Company"
           />
           <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
@@ -26,8 +33,8 @@ export default function ForgotPassword() {
           <form
             noValidate
             onSubmit={handleSubmit((data) => {
-             
-              // TODO : implementation on backend with email
+              dispatch(resetPasswordRequestAsync(data.email))
+              
             })}
             className="space-y-6"
           >
@@ -41,11 +48,11 @@ export default function ForgotPassword() {
               <div className="mt-2">
                 <input
                   id="email"
-                  {...register("email", {
-                    required: "email is required",
+                  {...register('email', {
+                    required: 'email is required',
                     pattern: {
                       value: /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/gi,
-                      message: "email not valid",
+                      message: 'email not valid',
                     },
                   })}
                   type="email"
@@ -53,6 +60,9 @@ export default function ForgotPassword() {
                 />
                 {errors.email && (
                   <p className="text-red-500">{errors.email.message}</p>
+                )}
+                {mailSent && (
+                  <p className="text-green-500">Mail Sent</p>
                 )}
               </div>
             </div>
@@ -68,7 +78,7 @@ export default function ForgotPassword() {
           </form>
 
           <p className="mt-10 text-center text-sm text-gray-500">
-            Send me back to{" "}
+            Send me back to{' '}
             <Link
               to="/login"
               className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"

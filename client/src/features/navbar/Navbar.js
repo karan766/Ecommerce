@@ -8,7 +8,7 @@ import {
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectItems } from "../cart/cartSlice";
-import { selectLoggedInUser } from "../auth/authSlice";
+import { selectUserInfo } from "../user/userSlice";
 
 const navigation = [
   { name: "Products", link: "/", role: "user" },
@@ -27,11 +27,13 @@ function classNames(...classes) {
 
 function NavBar({ children }) {
   const items = useSelector(selectItems);
-  const userInfo = useSelector(selectLoggedInUser);
+  const  userInfo = useSelector(selectUserInfo);
+  
+ 
+  
 
-  return (
-    <>
-      {/* <div className="min-h-full"> */}
+  return userInfo && (
+    <div>
       <Disclosure as="nav" className="bg-gray-800 sticky z-10 top-0">
         {({ open }) => (
           <>
@@ -41,7 +43,7 @@ function NavBar({ children }) {
                   <div className="flex-shrink-0 bg-gray-800">
                     <Link to="/" className="">
                       <img
-                        className="h-10 w-16 "
+                        className="h-10 w-16"
                         src="../../../logo.png"
                         alt="Your Company"
                       />
@@ -76,7 +78,6 @@ function NavBar({ children }) {
                         type="button"
                         className="rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                       >
-                        <span className="sr-only">View notifications</span>
                         <ShoppingCartIcon
                           className="h-8 w-8"
                           aria-hidden="true"
@@ -88,7 +89,6 @@ function NavBar({ children }) {
                         {items.length}
                       </span>
                     )}
-
                     {/* Profile dropdown */}
                     <Menu as="div" className="relative ml-3">
                       <div>
@@ -132,7 +132,6 @@ function NavBar({ children }) {
                   </div>
                 </div>
                 <div className="-mr-2 flex md:hidden">
-                  {/* Mobile menu button */}
                   <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                     <span className="sr-only">Open main menu</span>
                     {open ? (
@@ -144,7 +143,6 @@ function NavBar({ children }) {
                 </div>
               </div>
             </div>
-
             <Disclosure.Panel className="md:hidden">
               <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
                 {navigation.map(
@@ -176,9 +174,7 @@ function NavBar({ children }) {
                   </div>
                   <div className="relative ml-3 w-full">
                     <div className="ml-3">
-                      <div className="text-base font-medium leading-none text-white my-2">
-                        {/* {userInfo?.addresses[0]?.name} */}
-                      </div>
+                      <div className="text-base font-medium leading-none text-white my-2"></div>
                       <div className="text-sm font-medium leading-none text-gray-400">
                         {userInfo.email}
                       </div>
@@ -217,7 +213,7 @@ function NavBar({ children }) {
           </>
         )}
       </Disclosure>
-
+  
       <header className="bg-white shadow">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
@@ -228,9 +224,9 @@ function NavBar({ children }) {
       <main>
         <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">{children}</div>
       </main>
-      {/* </div> */}
-    </>
-  );
+    </div>
+  ) 
+  
 }
 
 export default NavBar;

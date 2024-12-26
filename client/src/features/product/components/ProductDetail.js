@@ -17,21 +17,6 @@ import { Link } from "react-router-dom";
 import { RotatingLines } from "react-loader-spinner";
 // TODO: In server data we will add colors, sizes , highlights. to each product
 
-const colors = [
-  { name: "White", class: "bg-white", selectedClass: "ring-gray-400" },
-  { name: "Gray", class: "bg-gray-200", selectedClass: "ring-gray-400" },
-  { name: "Black", class: "bg-gray-900", selectedClass: "ring-gray-900" },
-];
-const sizes = [
-  { name: "XXS", inStock: false },
-  { name: "XS", inStock: true },
-  { name: "S", inStock: true },
-  { name: "M", inStock: true },
-  { name: "L", inStock: true },
-  { name: "XL", inStock: true },
-  { name: "2XL", inStock: true },
-  { name: "3XL", inStock: true },
-];
 
 <ToastContainer
   position="top-right"
@@ -60,9 +45,9 @@ function classNames(...classes) {
 // TODO : Loading UI
 
 export default function ProductDetail() {
-  const [selectedColor, setSelectedColor] = useState(colors[0]);
-  const [selectedSize, setSelectedSize] = useState(sizes[2]);
-  const user = useSelector(selectLoggedInUser);
+  const [selectedColor, setSelectedColor] = useState();
+  const [selectedSize, setSelectedSize] = useState();
+ 
   const items = useSelector(selectItems);
   const product = useSelector(selectProductById);
   const dispatch = useDispatch();
@@ -71,8 +56,14 @@ export default function ProductDetail() {
 
   const handleCart = (e) => {
     e.preventDefault();
-    if (items.findIndex((item) => item.product.id === product.id) < 0) {
-      const newItem = { product: product.id,  quantity: 1, user: user.id };
+    if(product.stock <1) {
+      toast.error("Product out of stock");
+      return
+      
+    }
+    if (items.findIndex((item) =>  item.product.id === product.id) < 0) {
+      const newItem = { product: product.id,  quantity: 1};
+      
       delete newItem["id"];
       dispatch(addToCartAsync(newItem));
       toast.success("Product added to cart");
@@ -205,9 +196,9 @@ export default function ProductDetail() {
                 </div>
               </div>
 
-              <form className="mt-10">
+             <form className="mt-10">
                 {/* Colors */}
-                <div>
+                {product.colors && product.colors.length  &&   <div>
                   <h3 className="text-sm font-medium text-gray-900">Color</h3>
 
                   <RadioGroup
@@ -219,7 +210,7 @@ export default function ProductDetail() {
                       Choose a color
                     </RadioGroup.Label>
                     <div className="flex items-center space-x-3">
-                      {colors.map((color) => (
+                      {product.colors.map((color) => (
                         <RadioGroup.Option
                           key={color.name}
                           value={color}
@@ -246,10 +237,10 @@ export default function ProductDetail() {
                       ))}
                     </div>
                   </RadioGroup>
-                </div>
+                </div>}
 
                 {/* Sizes */}
-                <div className="mt-10">
+                {product.sizes && product.sizes.length  &&   <div className="mt-10">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium text-gray-900">Size</h3>
                     <Link
@@ -269,7 +260,7 @@ export default function ProductDetail() {
                       Choose a size
                     </RadioGroup.Label>
                     <div className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4">
-                      {sizes.map((size) => (
+                      {product.sizes.map((size) => (
                         <RadioGroup.Option
                           key={size.name}
                           value={size}
@@ -327,7 +318,7 @@ export default function ProductDetail() {
                       ))}
                     </div>
                   </RadioGroup>
-                </div>
+                </div>}
 
                 <button
                   onClick={handleCart}

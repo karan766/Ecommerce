@@ -9,8 +9,9 @@ const UserSchema = new mongoose.Schema({
     role: { type: String, required: true , default: "user"},
     addresses: { type: [Schema.Types.Mixed] },
     salt : Buffer ,
-   Orders : { type: [Schema.Types.Mixed]}
-});
+   Orders : { type: [Schema.Types.Mixed]},
+   resetPasswordToken: { type: Buffer, default: "" }
+}, { timestamps: true });
 const virtual = UserSchema.virtual("id");
 
 virtual.get(function () {    

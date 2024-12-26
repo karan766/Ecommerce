@@ -33,6 +33,8 @@ const ProductSchema = new Schema(
     category: { type: String, required: true },
     thumbnail: { type: String, required: true },
     images: { type: [String], required: true },
+    colors: { type: [Schema.Types.Mixed] },
+    sizes: { type: [String] },
     deleted: { type: Boolean, required: true, default: false },
   },
   {
