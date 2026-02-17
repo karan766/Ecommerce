@@ -31,6 +31,7 @@ const ProductSchema = new Schema(
     },
     brand: { type: String, required: true },
     category: { type: String, required: true },
+    make: { type: String, required: true },
     highlights: { type: [Schema.Types.Mixed], required: true },
     thumbnail: { type: String, required: true },
     images: { type: [String], required: true },

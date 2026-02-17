@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./utils/connectDB.js";
+import { seedMakes } from "./utils/seedMakes.js";
 import ProductRouter from "./routes/ProductRoutes.js";
 import BrandRouter from "./routes/BrandRoutes.js";
 import CategoryRouter from "./routes/CategoryRoutes.js";
@@ -9,6 +10,7 @@ import UserRouter from "./routes/UserRoute.js";
 import AuthRouter from "./routes/AuthRoute.js";
 import CartRouter from "./routes/CartRoutes.js";
 import OrderRouter from "./routes/OrderRoute.js";
+import MakeRouter from "./routes/MakeRoutes.js";
 import passport from "passport";
 import session from "express-session";
 import LocalStrategy from "passport-local";
@@ -64,6 +66,7 @@ app.use(express.raw({type:"application/json"}));
 app.use("/products",isAuth(), ProductRouter);
 app.use("/brands",isAuth(), BrandRouter);
 app.use("/category",isAuth(), CategoryRouter);
+app.use("/makes",isAuth(), MakeRouter);
 app.use("/users",isAuth(), UserRouter);
 app.use("/auth", AuthRouter);
 app.use("/cart",isAuth(), CartRouter);
@@ -209,6 +212,9 @@ app.post('/webhook', express.json({type: 'application/json'}), (request, respons
 
 
 connectDB();
+
+// Seed default makes
+seedMakes();
 
 
 

@@ -5,8 +5,15 @@ import {
   fetchProductByIdAsync,
   selectBrands,
   selectCategories,
+  selectMakes,
   selectProductById,
   updateProductAsync,
+  fetchMakesAsync,
+  fetchBrandsAsync,
+  fetchCategoriesAsync,
+  createMakeAsync,
+  createBrandAsync,
+  createCategoryAsync,
 } from "../../product/productSlice";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -39,6 +46,7 @@ function ProductForm() {
   const navigate = useNavigate();
   const brands = useSelector(selectBrands);
   const categories = useSelector(selectCategories);
+  const makes = useSelector(selectMakes);
   const dispatch = useDispatch();
   const params = useParams();
   const selectedProduct = useSelector(selectProductById);
@@ -46,6 +54,14 @@ function ProductForm() {
 
   const [newColor, setNewColor] = useState("#000000");
   const [colors, setColors] = useState([]);
+  const [newMake, setNewMake] = useState("");
+  const [showMakeInput, setShowMakeInput] = useState(false);
+  const [newBrand, setNewBrand] = useState("");
+  const [showBrandInput, setShowBrandInput] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [showCategoryInput, setShowCategoryInput] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const sizes = [
     { name: "XXS", inStock: true, id: "xxs" },
     { name: "XS", inStock: true, id: "xs" },
@@ -56,14 +72,17 @@ function ProductForm() {
     { name: "2XL", inStock: true, id: "2xl" },
     { name: "3XL", inStock: true, id: "3xl" },
   ];
-  
-    
+
   useEffect(() => {
     if (params.id) {
       dispatch(fetchProductByIdAsync(params.id));
     } else {
       dispatch(clearSelectedProduct());
     }
+    // Fetch all data when component mounts
+    dispatch(fetchMakesAsync());
+    dispatch(fetchBrandsAsync());
+    dispatch(fetchCategoriesAsync());
   }, [params.id, dispatch]);
 
   useEffect(() => {
@@ -79,6 +98,9 @@ function ProductForm() {
       setValue("image3", selectedProduct.images[2]);
       setValue("brand", selectedProduct.brand);
       setValue("category", selectedProduct.category);
+      setSelectedBrand(selectedProduct.brand);
+      setSelectedCategory(selectedProduct.category);
+      setValue("make", selectedProduct.make);
       setValue("highlight1", selectedProduct.highlights[0]);
       setValue("highlight2", selectedProduct.highlights[1]);
       setValue("highlight3", selectedProduct.highlights[2]);
@@ -87,7 +109,7 @@ function ProductForm() {
         "sizes",
         selectedProduct.sizes.map((size) => size.id)
       );
-    
+
       setColors([...selectedProduct.colors]);
     }
   }, [selectedProduct, params.id, setValue]);
@@ -99,11 +121,95 @@ function ProductForm() {
       toast.error("Color already added");
     }
   };
-  
 
   const handleRemoveColor = (color) => {
     setColors((prevColors) => prevColors.filter((c) => c !== color));
     toast.success("Color removed");
+  };
+
+  const handleAddMake = async () => {
+    if (
+      newMake.trim() &&
+      !makes.find((make) => make.value === newMake.trim())
+    ) {
+      try {
+        const makeData = {
+          label: newMake.trim(),
+          value: newMake.trim().toLowerCase().replace(/\s+/g, "-"),
+        };
+        dispatch(createMakeAsync(makeData));
+        setValue("make", makeData.value);
+        setNewMake("");
+        setShowMakeInput(false);
+        toast.success("Make added successfully");
+      } catch (error) {
+        toast.error("Failed to add make");
+      }
+    } else if (makes.find((make) => make.value === newMake.trim())) {
+      toast.error("Make already exists");
+    }
+  };
+
+  const handleAddBrand = async () => {
+    if (
+      newBrand.trim() &&
+      !brands.find((brand) => brand.value === newBrand.trim())
+    ) {
+      try {
+        const brandData = {
+          label: newBrand.trim(),
+          value: newBrand.trim().toLowerCase().replace(/\s+/g, "-"),
+        };
+        dispatch(createBrandAsync(brandData));
+        setValue("brand", brandData.value);
+        setSelectedBrand(brandData.value);
+        setNewBrand("");
+        setShowBrandInput(false);
+        toast.success("Brand added successfully");
+      } catch (error) {
+        toast.error("Failed to add brand");
+      }
+    } else if (brands.find((brand) => brand.value === newBrand.trim())) {
+      toast.error("Brand already exists");
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (
+      newCategory.trim() &&
+      !categories.find((category) => category.value === newCategory.trim())
+    ) {
+      try {
+        const categoryData = {
+          label: newCategory.trim(),
+          value: newCategory.trim().toLowerCase().replace(/\s+/g, "-"),
+        };
+        dispatch(createCategoryAsync(categoryData));
+        setValue("category", categoryData.value);
+        setSelectedCategory(categoryData.value);
+        setNewCategory("");
+        setShowCategoryInput(false);
+        toast.success("Category added successfully");
+      } catch (error) {
+        toast.error("Failed to add category");
+      }
+    } else if (
+      categories.find((category) => category.value === newCategory.trim())
+    ) {
+      toast.error("Category already exists");
+    }
+  };
+
+  const handleBrandChange = (e) => {
+    const brand = e.target.value;
+    setSelectedBrand(brand);
+    setValue("brand", brand);
+  };
+
+  const handleCategoryChange = (e) => {
+    const category = e.target.value;
+    setSelectedCategory(category);
+    setValue("category", category);
   };
 
   const handleDelete = () => {
@@ -115,7 +221,7 @@ function ProductForm() {
   };
 
   return (
-    <>
+    <div className="min-h-screen overflow-y-auto bg-gray-50">
       <form
         noValidate
         onSubmit={handleSubmit((data) => {
@@ -134,7 +240,7 @@ function ProductForm() {
             product.highlight4,
           ];
           product.rating = 0;
-        
+
           if (product.sizes) {
             product.sizes = product.sizes.map(
               (size) => sizes.find((sz) => sz.id === size) || size
@@ -156,17 +262,16 @@ function ProductForm() {
           } else {
             dispatch(createProductAsync(product));
             reset();
-           
           }
         })}
       >
-        <div className="space-y-12 bg-white p-12">
+        <div className="space-y-12 bg-white p-12 min-h-screen overflow-y-auto">
           <div className="border-b border-gray-900/10 pb-12">
             <h2 className="text-base font-semibold leading-7 text-gray-900">
               Add Product
             </h2>
 
-            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 max-w-full">
               <div className="sm:col-span-6">
                 {selectedProduct?.deleted && (
                   <h2 className="text-red-500 sm:col-span-6">
@@ -228,6 +333,8 @@ function ProductForm() {
                     {...register("brand", {
                       required: "brand is required",
                     })}
+                    onChange={handleBrandChange}
+                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-amber-600 sm:text-sm sm:leading-6"
                   >
                     <option value="">--choose brand--</option>
                     {brands.map((brand) => (
@@ -237,8 +344,183 @@ function ProductForm() {
                     ))}
                   </select>
                 </div>
+                
+                
+
+                <div className="mt-4 w-full">
+                  {!showBrandInput ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowBrandInput(true)}
+                      className="w-full rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 border-2 border-blue-700"
+                      style={{ display: 'block', visibility: 'visible', minHeight: '44px' }}
+                    >
+                      ➕ Add New Brand
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newBrand}
+                        onChange={(e) => setNewBrand(e.target.value)}
+                        placeholder="Enter new brand"
+                        className="block flex-1 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-600 sm:text-sm sm:leading-6"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddBrand}
+                        className="rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500"
+                      >
+                        Add
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowBrandInput(false);
+                          setNewBrand("");
+                        }}
+                        className="rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-             
+
+              <div className="sm:col-span-6">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Category
+                </label>
+                <div className="mt-2">
+                  <select
+                    {...register("category", {
+                      required: "category is required",
+                    })}
+                    onChange={handleCategoryChange}
+                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-amber-600 sm:text-sm sm:leading-6"
+                  >
+                    <option value="">--choose category--</option>
+                    {categories.map((category) => (
+                      <option value={category.value} key={category.id}>
+                        {category.label}{" "}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+               
+               
+
+                <div className="mt-4 w-full">
+                  {!showCategoryInput ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowCategoryInput(true)}
+                      className="w-full rounded-md bg-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 border-2 border-purple-700"
+                      style={{ display: 'block', visibility: 'visible', minHeight: '44px' }}
+                    >
+                      ➕ Add New Category
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        placeholder="Enter new category"
+                        className="block flex-1 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-600 sm:text-sm sm:leading-6"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCategory}
+                        className="rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500"
+                      >
+                        Add
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCategoryInput(false);
+                          setNewCategory("");
+                        }}
+                        className="rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {selectedBrand && selectedCategory && (
+                <div className="sm:col-span-6">
+                  <label
+                    htmlFor="make"
+                    className="block text-sm font-medium leading-6 text-gray-900"
+                  >
+                    Make
+                  </label>
+                  <div className="mt-2">
+                    <select
+                      {...register("make", {
+                        required: "make is required",
+                      })}
+                      className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-amber-600 sm:text-sm sm:leading-6"
+                    >
+                      <option value="">--choose make--</option>
+                      {makes.map((make) => (
+                        <option value={make.value} key={make.id}>
+                          {make.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="mt-4">
+                    {!showMakeInput ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowMakeInput(true)}
+                        className="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                      >
+                        Add New Make
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={newMake}
+                          onChange={(e) => setNewMake(e.target.value)}
+                          placeholder="Enter new make"
+                          className="block flex-1 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-amber-600 sm:text-sm sm:leading-6"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddMake}
+                          className="rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500"
+                        >
+                          Add
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMakeInput(false);
+                            setNewMake("");
+                          }}
+                          className="rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {colors.length > 0 && (
                 <>
                   <div className="flex flex-col justify-start items-start gap-4 col-span-full">
@@ -313,29 +595,6 @@ function ProductForm() {
                 </div>
               </div>
 
-              <div className="col-span-full">
-                <label
-                  htmlFor="category"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Category
-                </label>
-                <div className="mt-2">
-                  <select
-                    {...register("category", {
-                      required: "category is required",
-                    })}
-                  >
-                    <option value="">--choose category--</option>
-                    {categories.map((category) => (
-                      <option value={category.value} key={category.id}>
-                        {category.label}{" "}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
               <div className="sm:col-span-2">
                 <label
                   htmlFor="price"
@@ -350,7 +609,6 @@ function ProductForm() {
                       {...register("price", {
                         required: "price is required",
                         min: 1,
-                        
                       })}
                       id="price"
                       className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
@@ -560,11 +818,8 @@ function ProductForm() {
                   </div>
                 </div>
               </div>
-              
             </div>
           </div>
-
-          
         </div>
 
         <div className="mt-6 flex items-center justify-end gap-x-6">
@@ -604,7 +859,7 @@ function ProductForm() {
         cancelAction={() => setOpenModal(null)}
         showModal={openModal}
       ></Modal>
-    </>
+    </div>
   );
 }
 

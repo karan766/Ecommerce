@@ -3,10 +3,12 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   fetchBrandsAsync,
   fetchCategoriesAsync,
+  fetchMakesAsync,
   fetchProductsByFiltersAsync,
   selectAllProducts,
   selectBrands,
   selectCategories,
+  selectMakes,
   selectTotalItems,
 } from "../../product/productSlice";
 import { Dialog, Disclosure, Menu, Transition } from "@headlessui/react";
@@ -42,6 +44,7 @@ export default function AdminProductList() {
   const products = useSelector(selectAllProducts);
   const brands = useSelector(selectBrands);
   const categories = useSelector(selectCategories);
+  const makes = useSelector(selectMakes);
   const totalItems = useSelector(selectTotalItems);
   const filters = [
     {
@@ -53,6 +56,11 @@ export default function AdminProductList() {
       id: "brand",
       name: "Brands",
       options: brands,
+    },
+    {
+      id: "make",
+      name: "Makes",
+      options: makes,
     },
   ];
 
@@ -101,6 +109,7 @@ export default function AdminProductList() {
   useEffect(() => {
     dispatch(fetchBrandsAsync());
     dispatch(fetchCategoriesAsync());
+    dispatch(fetchMakesAsync());
   }, [dispatch]);
 
   return (

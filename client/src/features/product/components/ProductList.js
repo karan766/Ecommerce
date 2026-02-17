@@ -6,10 +6,12 @@ import { RotatingLines } from "react-loader-spinner";
 import {
   fetchBrandsAsync,
   fetchCategoriesAsync,
+  fetchMakesAsync,
   fetchProductsByFiltersAsync,
   selectAllProducts,
   selectBrands,
   selectCategories,
+  selectMakes,
   selectStatus,
   selectTotalItems,
   resetProductError,
@@ -43,6 +45,7 @@ export default function ProductList() {
   const products = useSelector(selectAllProducts);
   const brands = useSelector(selectBrands);
   const categories = useSelector(selectCategories);
+  const makes = useSelector(selectMakes);
   const totalItems = useSelector(selectTotalItems);
   const filters = [
     {
@@ -54,6 +57,11 @@ export default function ProductList() {
       id: "brand",
       name: "Brands",
       options: brands,
+    },
+    {
+      id: "make",
+      name: "Makes",
+      options: makes,
     },
   ];
 
@@ -107,6 +115,7 @@ export default function ProductList() {
   useEffect(() => {
     dispatch(fetchBrandsAsync());
     dispatch(fetchCategoriesAsync());
+    dispatch(fetchMakesAsync());
   }, [dispatch]);
 
   useEffect(() => {

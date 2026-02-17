@@ -99,3 +99,71 @@ export function fetchBrands() {
     resolve({ data });
   });
 }
+
+export function fetchMakes() {
+  return new Promise(async (resolve) => {
+    const response = await fetch("/makes");
+    const data = await response.json();
+    resolve({ data });
+  });
+}
+
+export function createMake(make) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch("/makes", {
+        method: "POST",
+        body: JSON.stringify(make),
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      resolve({ data });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+export function createBrand(brand) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch("/brands", {
+        method: "POST",
+        body: JSON.stringify(brand),
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      resolve({ data });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+export function createCategory(category) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch("/category", {
+        method: "POST",
+        body: JSON.stringify(category),
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      resolve({ data });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}

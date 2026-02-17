@@ -36,6 +36,12 @@ export const fetchAllProducts = async (req, res) => {
       productsQuery = productsQuery.where("brand").in(brands);
   }
   
+    if (req.query.make) {
+      // If the make query parameter is passed, handle multiple makes
+      const makes = req.query.make.split(','); // Assuming makes are passed as a comma-separated list
+      productsQuery = productsQuery.where("make").in(makes);
+  }
+  
 
     if (req.query._sort && req.query._order) {
       productsQuery = productsQuery.sort({
