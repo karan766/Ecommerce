@@ -7,7 +7,6 @@ export function isAuth  (req, res, Done)  {
   export function sanatizeUser  (user) {
     return {
       id: user.id,
-      
       role: user.role,
     }
 }
