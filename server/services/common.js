@@ -15,8 +15,6 @@ export const cookieExtracter = function(req) {
   if (req && req.cookies) {
     token = req.cookies["jwt"]
   }
- 
-  // token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NjcwOTBjMDQwMTBlMDMxODU5ZDBkOSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzM1NzI2MTUzfQ.KnYFOx9YGSwuxpH-4vOPXkN2dPGDDPh9qt0gnuXJUI4"
   return token;
 };
 

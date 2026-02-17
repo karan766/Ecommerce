@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema({
     addresses: { type: [Schema.Types.Mixed] },
     salt : Buffer ,
    Orders : { type: [Schema.Types.Mixed]},
-   resetPasswordToken: { type: Buffer, default: "" }
+   resetPasswordToken: { type: String, default: "" }
 }, { timestamps: true });
 const virtual = UserSchema.virtual("id");
 

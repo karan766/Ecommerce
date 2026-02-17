@@ -4,7 +4,7 @@ import { sanatizeUser } from "../services/common.js";
 import Jwt from "jsonwebtoken";
 import { sendEMail , welcomeMail } from "./MailController.js";
 
-const SECRET_KEY = "SECRET_KEY";
+const SECRET_KEY = process.env.SECRET_KEY;
 
 export const CreateUser = async (req, res) => {
   try {
@@ -27,9 +27,9 @@ export const CreateUser = async (req, res) => {
           if (err) {
             return res.status(400).json({ message: err.message });
           } else {
-            const token = Jwt.sign(sanatizeUser(doc), SECRET_KEY);
+            const token = Jwt.sign(sanatizeUser(doc), SECRET_KEY || "SECRET_KEY");
             res
-              .cookie("jwt", "token", {
+              .cookie("jwt", token, {
                 expires: new Date(Date.now() + 36000000),
                 httpOnly: true,
               })
@@ -67,18 +67,18 @@ export const checkAuth = async (req, res) => {
   if (req.user) {
     res.json(req.user);
   } else {
-    res.sendstatus(401);
+    res.sendStatus(401);
   }
 };
 
 export const resetPasswordRequest = async (req, res) => {
- const email =req.body.email;
+  const email = req.body.email;
 
-  const user = User.findOne({ email: email });
+  const user = await User.findOne({ email: email });
  
   if (user) {
     const token = crypto.randomBytes(16).toString("hex");
-    const user = User.findOneAndUpdate({ email: email, resetPasswordToken: token ,  } , {new:true});
+    await User.findOneAndUpdate({ email: email }, { resetPasswordToken: token }, { new: true });
       
     const resetPage =
       "localhost:3000/reset-password?token=" + token + "&email=" + email;
@@ -90,10 +90,10 @@ export const resetPasswordRequest = async (req, res) => {
       const response = await sendEMail({ to: email, subject, html, text: "" });
       res.json(response);
     } else {
-      res.sendStatus("email not found");
+      res.sendStatus(400);
     }
   } else {
-    res.sendStatus("user not found");
+    res.sendStatus(404);
   }
 };
 

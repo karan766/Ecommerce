@@ -101,9 +101,12 @@ export default function Login() {
                 {errors.password && (
                   <p className="text-red-500">{errors.password.message}</p>
                 )}
-                {error && <p className="text-red-500">{error.message}</p>}
               </div>
-              {error && <p className="text-red-500">{error || error.message}</p>}
+              {error && (
+                <p className="text-red-500">
+                  {typeof error === 'string' ? error : error.message || 'Login failed'}
+                </p>
+              )}
             </div>
 
             <div>

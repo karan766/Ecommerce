@@ -4,9 +4,9 @@ export function createUser(userData) {
       method: "POST",
       body: JSON.stringify(userData),
       headers: { "content-type": "application/json" },
+      credentials: 'include'
     });
     const data = await response.json();
-  
     resolve({ data });
   });
 }
@@ -18,10 +18,10 @@ export function loginUser(loginInfo) {
         method: "POST",
         body: JSON.stringify(loginInfo),
         headers: { "content-type": "application/json" },
+        credentials: 'include'
       });
       if (response.ok) {
         const data = await response.json();
-
         resolve({ data });
       } else {
         const error = await response.text();
@@ -30,16 +30,16 @@ export function loginUser(loginInfo) {
     } catch (error) {
       reject(error);
     }
-
   });
 }
 export function checkAuth() {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch("/auth/check");
+      const response = await fetch("/auth/check", {
+        credentials: 'include'
+      });
       if (response.ok) {
         const data = await response.json();
-
         resolve({ data });
       } else {
         const error = await response.text();
@@ -55,7 +55,9 @@ export function checkAuth() {
 export function signOut(userId) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch('/auth/logout');
+      const response = await fetch('/auth/logout', {
+        credentials: 'include'
+      });
       if (response.ok) {
         resolve({ data:'success' });
       } else {
@@ -73,11 +75,12 @@ export function resetPasswordRequest(email) {
   return new Promise(async (resolve, reject) => {
     try {
       const response = await fetch(
-        "/auth/reset-Password-Request",
+        "/auth/reset-password-request",
         {
           method: "POST",
           body: JSON.stringify({ email }),
           headers: { "content-type": "application/json" },
+          credentials: 'include'
         }
       );
       if (response.ok) {
@@ -103,6 +106,7 @@ export function resetPassword(data) {
           method: "POST",
           body: JSON.stringify(data),
           headers: { "content-type": "application/json" },
+          credentials: 'include'
         }
       );
       if (response.ok) {

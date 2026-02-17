@@ -31,13 +31,16 @@ const token = jwt.sign({ foo: 'bar' }, 'shhhhh');
 
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 dotenv.config();
 
 const opts = {
   jwtFromRequest: cookieExtracter, // Extract JWT from the Authorization header
-  secretOrKey: process.env.SECRET_KEY, // Replace with your secret key
+  secretOrKey: process.env.SECRET_KEY || "SECRET_KEY", // Replace with your secret key
 };
 
 //Email
@@ -52,7 +55,11 @@ const transporter = nodemailer.createTransport({
 });
 
 app.use(session({
-  secret: "keyboard cat", resave: true, saveUninitialized: true })); 
+  secret: process.env.SECRET_KEY || "keyboard cat", 
+  resave: false, 
+  saveUninitialized: false,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+})); 
 
 app.use(passport.authenticate("session"));
 // Resolve __dirname for ES modules
@@ -84,8 +91,8 @@ passport.use(
       }
       
       // Ensure `user.password` and `user.salt` are Buffers
-      const storedPassword = Buffer.from(user.password); // Convert to Buffer
-      const salt = Buffer.from(user.salt); // Convert to Buffer
+      const storedPassword = user.password instanceof Buffer ? user.password : Buffer.from(user.password);
+      const salt = user.salt instanceof Buffer ? user.salt : Buffer.from(user.salt);
 
       // Hash the provided password
       crypto.pbkdf2(password, salt, 310000, storedPassword.length, "sha256", (err, hashedPassword) => {
@@ -103,7 +110,7 @@ passport.use(
         }
 
         // Generate JWT token
-        const token = jwt.sign(sanatizeUser(user), process.env.SECRET_KEY);
+        const token = jwt.sign(sanatizeUser(user), process.env.SECRET_KEY || "SECRET_KEY");
 
         // Return authenticated user data
         return done(null, { id: user.id, role: user.role, token });
@@ -121,10 +128,10 @@ passport.use(
   new JwtStrategy(opts, async (jwt_payload, done) => {
     try {
       // Use `await` to fetch the user from the database
-      const user = await User.findById( jwt_payload.id );
+      const user = await User.findById(jwt_payload.id);
 
       if (user) {
-        return done(null,sanatizeUser(user)); // If user is found, pass it to Passport
+        return done(null, sanatizeUser(user)); // If user is found, pass it to Passport
       } else {
         return done(null, false); // If no user is found, pass `false`
       }
