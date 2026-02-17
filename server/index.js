@@ -27,7 +27,7 @@ import cookieParser from "cookie-parser";
 import { fileURLToPath } from 'url';
 import path from "path";
 const token = jwt.sign({ foo: 'bar' }, 'shhhhh');
-
+const PORT = process.env.PORT || 8080;
 
 
 const app = express();
@@ -168,53 +168,63 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 
 app.post("/create-payment-intent", async (req, res) => {
-  const { totalAmount } = req.body;
+  try {
+    const { totalAmount } = req.body;
 
+    // Validate totalAmount
+    if (!totalAmount || totalAmount <= 0) {
+      return res.status(400).json({ error: "Invalid total amount" });
+    }
 
-  // Create a PaymentIntent with the order amount and currency
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: totalAmount*100,
-    currency: "usd",
-    // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
-    automatic_payment_methods: {
-      enabled: true,
-    },
-  });
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(totalAmount * 100), // Ensure it's an integer
+      currency: "usd",
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
 
-
-  res.send({
-    
-    clientSecret: paymentIntent.client_secret,
-
-    // [DEV]: For demo purposes only, you should avoid exposing the PaymentIntent ID in the client-side code.
-    dpmCheckerLink: `https://dashboard.stripe.com/settings/payment_methods/review?transaction_id=${paymentIntent.id}`,
-  });
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      // [DEV]: For demo purposes only, you should avoid exposing the PaymentIntent ID in the client-side code.
+      dpmCheckerLink: `https://dashboard.stripe.com/settings/payment_methods/review?transaction_id=${paymentIntent.id}`,
+    });
+  } catch (error) {
+    console.error("Error creating payment intent:", error);
+    res.status(500).json({ error: "Failed to create payment intent" });
+  }
 });
 
 
 //Webhooks
-app.post('/webhook', express.json({type: 'application/json'}), (request, response) => {
-  const event = request.body;
+app.post('/webhook', express.raw({type: 'application/json'}), (request, response) => {
+  try {
+    const event = request.body;
 
-  // Handle the event
-  switch (event.type) {
-    case 'payment_intent.succeeded':
-      const paymentIntent = event.data.object;
-      // Then define and call a method to handle the successful payment intent.
-      // handlePaymentIntentSucceeded(paymentIntent);
-      break;
-    case 'payment_method.attached':
-      const paymentMethod = event.data.object;
-      // Then define and call a method to handle the successful attachment of a PaymentMethod.
-      // handlePaymentMethodAttached(paymentMethod);
-      break;
-    // ... handle other event types
-    default:
-      console.log(`Unhandled event type ${event.type}`);
+    // Handle the event
+    switch (event.type) {
+      case 'payment_intent.succeeded':
+        const paymentIntent = event.data.object;
+        console.log('Payment succeeded:', paymentIntent.id);
+        // Here you would typically update your database to mark the order as paid
+        // handlePaymentIntentSucceeded(paymentIntent);
+        break;
+      case 'payment_method.attached':
+        const paymentMethod = event.data.object;
+        console.log('Payment method attached:', paymentMethod.id);
+        // handlePaymentMethodAttached(paymentMethod);
+        break;
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    // Return a response to acknowledge receipt of the event
+    response.json({received: true});
+  } catch (error) {
+    console.error('Webhook error:', error);
+    response.status(400).json({error: 'Webhook handler failed'});
   }
-
-  // Return a response to acknowledge receipt of the event
-  response.json({received: true});
 });
 
 
@@ -229,6 +239,6 @@ app.get("/", (req, res) => {
   res.json({ status: 200, message: "Hello World!" });
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
