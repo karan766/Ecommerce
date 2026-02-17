@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: ecommerce-backend
+    env: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URL
+        fromDatabase:
+          name: ecommerce-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: CLIENT_URL
+        value: https://your-frontend-url.onrender.com
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: EMAIL_ID
+        sync: false
+
+  - type: web
+    name: ecommerce-frontend
+    env: static
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/build
+    envVars:
+      - key: REACT_APP_STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: REACT_APP_API_URL
+        value: https://your-backend-url.onrender.com
+
+databases:
+  - name: ecommerce-db
+    databaseName: ecommerce
+    user: ecommerce_user

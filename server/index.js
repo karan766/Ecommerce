@@ -31,12 +31,42 @@ const PORT = process.env.PORT || 8080;
 
 
 const app = express();
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
-}));
+
+// CORS configuration for production deployment
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      process.env.CLIENT_URL
+    ].filter(Boolean); // Remove undefined values
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 dotenv.config();
+
+// Validate required environment variables
+const requiredEnvVars = ['MONGO_URL', 'SECRET_KEY'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error('Missing required environment variables:', missingEnvVars);
+  process.exit(1);
+}
 
 const opts = {
   jwtFromRequest: cookieExtracter, // Extract JWT from the Authorization header
@@ -58,7 +88,11 @@ app.use(session({
   secret: process.env.SECRET_KEY || "keyboard cat", 
   resave: false, 
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production', // Only secure in production
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }
 })); 
 
 app.use(passport.authenticate("session"));
@@ -237,6 +271,14 @@ seedMakes();
 
 app.get("/", (req, res) => {
   res.json({ status: 200, message: "Hello World!" });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ 
+    status: "OK", 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 app.listen(PORT, () => {

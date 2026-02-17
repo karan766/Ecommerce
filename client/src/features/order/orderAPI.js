@@ -1,7 +1,9 @@
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+
 export function createOrder(order) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch("/orders", {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
         method: "POST",
         body: JSON.stringify(order),
         headers: { "content-type": "application/json" },
@@ -25,7 +27,7 @@ export function createOrder(order) {
 export function updateOrder(order) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch("/orders/" + order.id, {
+      const response = await fetch(`${API_BASE_URL}/orders/${order.id}`, {
         method: "PATCH",
         body: JSON.stringify(order),
         headers: { "content-type": "application/json" },
@@ -64,7 +66,7 @@ export function fetchAllOrder(sort, pagination) {
 
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch("/orders?" + queryString, {
+      const response = await fetch(`${API_BASE_URL}/orders?${queryString}`, {
         credentials: 'include'
       });
       

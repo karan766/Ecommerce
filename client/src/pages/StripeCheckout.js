@@ -34,7 +34,7 @@ export default function StripeCheckout() {
     }
 
     // Create PaymentIntent as soon as the page loads
-    fetch("/create-payment-intent", {
+    fetch(`${process.env.REACT_APP_API_URL || ''}/create-payment-intent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ totalAmount: currentOrder.totalAmount }),

@@ -28,10 +28,14 @@ export const CreateUser = async (req, res) => {
             return res.status(400).json({ message: err.message });
           } else {
             const token = Jwt.sign(sanatizeUser(doc), SECRET_KEY || "SECRET_KEY");
+            const isProduction = process.env.NODE_ENV === 'production';
+            
             res
               .cookie("jwt", token, {
                 expires: new Date(Date.now() + 36000000),
                 httpOnly: true,
+                secure: isProduction, // Only secure in production
+                sameSite: isProduction ? 'none' : 'lax', // Allow cross-site cookies in production
               })
               .status(201)
               .json({ id: doc.id, role: doc.role });
@@ -46,20 +50,28 @@ export const CreateUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   const user = req.user;
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   res
     .cookie("jwt", req.user.token, {
       expires: new Date(Date.now() + 36000000),
       httpOnly: true,
+      secure: isProduction, // Only secure in production
+      sameSite: isProduction ? 'none' : 'lax', // Allow cross-site cookies in production
     })
     .status(201)
     .json({ id: user.id, role: user.role });
 };
 
 export const logout = async (req, res) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   res
     .cookie('jwt', null, {
       expires: new Date(Date.now()),
       httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
     })
     .sendStatus(200)
 };
@@ -81,7 +93,7 @@ export const resetPasswordRequest = async (req, res) => {
     await User.findOneAndUpdate({ email: email }, { resetPasswordToken: token }, { new: true });
       
     const resetPage =
-      "localhost:3000/reset-password?token=" + token + "&email=" + email;
+      `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${token}&email=${email}`;
     const subject = "reset password for Ekart";
     const html = `<p>Click <a href='${resetPage}'>here</a> to reset your password</p>`;
 
