@@ -74,8 +74,8 @@ export function fetchAllOrder(sort, pagination) {
         const ordersData = await response.json();
         resolve({
           data: {
-            orders: ordersData.products,
-            totalOrders: ordersData.totalOrders,
+            orders: ordersData.orders || ordersData,
+            totalOrders: ordersData.totalOrders || ordersData.length,
           },
         });
       } else {
