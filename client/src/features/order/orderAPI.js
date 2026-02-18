@@ -61,12 +61,23 @@ export function fetchAllOrder(sort, pagination) {
   }
 
   for (let key in pagination) {
-    queryString += `${key}=${pagination[key]}&`;
+    // Convert _limit to _per_page for backend compatibility
+    if (key === '_limit') {
+      queryString += `_per_page=${pagination[key]}&`;
+    } else {
+      queryString += `${key}=${pagination[key]}&`;
+    }
   }
+
+  // Remove trailing &
+  queryString = queryString.slice(0, -1);
+
+  // The backend expects query parameters as a route parameter
+  const fullUrl = `${API_BASE_URL}/orders/${queryString}`;
 
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/orders?${queryString}`, {
+      const response = await fetch(fullUrl, {
         credentials: 'include'
       });
       
@@ -74,13 +85,13 @@ export function fetchAllOrder(sort, pagination) {
         const ordersData = await response.json();
         resolve({
           data: {
-            orders: ordersData.orders || ordersData,
-            totalOrders: ordersData.totalOrders || ordersData.length,
+            orders: ordersData.products || [],
+            totalOrders: ordersData.totalOrders || 0,
           },
         });
       } else {
-        const error = await response.text();
-        reject(error);
+        const errorText = await response.text();
+        reject(new Error(`API Error: ${response.status} - ${errorText}`));
       }
     } catch (error) {
       reject(error);
