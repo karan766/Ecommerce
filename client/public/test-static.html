@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Static File Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 2rem; 
+            text-align: center; 
+            background: #f0f9ff;
+        }
+        .success { 
+            color: #10b981; 
+            font-size: 1.5rem; 
+            margin: 1rem 0;
+        }
+        .info {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Static File Test</h1>
+    <p class="success">✓ Static HTML files are working!</p>
+    
+    <div class="info">
+        <p><strong>Current URL:</strong> <span id="url"></span></p>
+        <p><strong>Timestamp:</strong> <span id="time"></span></p>
+    </div>
+    
+    <div style="margin-top: 2rem;">
+        <a href="/order-success.html?order_id=TEST123&payment_intent=pi_test" 
+           style="background: #10b981; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 6px; margin: 0.5rem;">
+           Test Order Success Page
+        </a>
+        <br><br>
+        <a href="/" 
+           style="background: #f59e0b; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 6px;">
+           Back to Home
+        </a>
+    </div>
+    
+    <script>
+        document.getElementById('url').textContent = window.location.href;
+        document.getElementById('time').textContent = new Date().toLocaleString();
+        console.log('Static test page loaded at:', new Date().toISOString());
+    </script>
+</body>
+</html>

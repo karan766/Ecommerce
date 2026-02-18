@@ -17,7 +17,9 @@ export default function UserOrders() {
   const status = useSelector(selectUserStatus);
 
   useEffect(() => {
-    dispatch(fetchLoggedInUserOrderAsync(userInfo.id));
+    if (userInfo && userInfo.id) {
+      dispatch(fetchLoggedInUserOrderAsync(userInfo.id));
+    }
   }, [dispatch, userInfo]);
 
   return (

@@ -1,0 +1,5 @@
+# Redirect order success to static HTML page
+/order-success/* /order-success.html?order_id=:splat 200
+
+# Fallback for SPA
+/* /index.html 200
