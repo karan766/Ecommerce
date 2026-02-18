@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./utils/connectDB.js";
 import { seedMakes } from "./utils/seedMakes.js";
+import { seedProducts } from "./utils/seedProducts.js";
 import ProductRouter from "./routes/ProductRoutes.js";
 import BrandRouter from "./routes/BrandRoutes.js";
 import CategoryRouter from "./routes/CategoryRoutes.js";
@@ -281,8 +282,9 @@ app.post('/webhook', express.raw({type: 'application/json'}), (request, response
 
 connectDB();
 
-// Seed default makes
-// seedMakes();
+// Seed default data
+seedMakes();
+seedProducts();
 
 
 
