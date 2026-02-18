@@ -32,17 +32,22 @@ const PORT = process.env.PORT || 8080;
 
 const app = express();
 
-// CORS configuration - permissive for deployment debugging
+// CORS configuration - explicit for production
 const corsOptions = {
-  origin: true, // Allow all origins for now
+  origin: [
+    'https://ecommerce-x9jr.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:3001'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
 
-// Handle preflight requests
+// Handle preflight requests explicitly
 app.options('*', cors(corsOptions));
 
 // Add debugging middleware
@@ -52,6 +57,15 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 dotenv.config();
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    cors: 'enabled'
+  });
+});
 
 // Validate required environment variables (but don't exit in production)
 const requiredEnvVars = ['MONGO_URL', 'SECRET_KEY'];
