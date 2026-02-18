@@ -310,6 +310,11 @@ app.get("/debug", (req, res) => {
   });
 });
 
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
