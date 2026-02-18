@@ -123,7 +123,7 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(path.resolve(__dirname, 'build')));
 app.use(cookieParser());
 app.use(express.raw({type:"application/json"}));
-app.use("/products",isAuth(), ProductRouter);
+app.use("/products", ProductRouter);
 app.use("/brands",isAuth(), BrandRouter);
 app.use("/category",isAuth(), CategoryRouter);
 app.use("/makes",isAuth(), MakeRouter);
