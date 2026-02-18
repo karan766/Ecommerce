@@ -53,14 +53,6 @@ function OrderSuccessPageSimple() {
             </Link>
           </div>
         </div>
-
-        {/* Debug info */}
-        <div className="mt-8 p-4 bg-gray-100 rounded text-left text-sm">
-          <strong>Debug Info:</strong><br/>
-          Order ID: {params?.id}<br/>
-          Payment Intent: {paymentIntent || 'None'}<br/>
-          URL: {window.location.href}
-        </div>
       </div>
     </div>
   );

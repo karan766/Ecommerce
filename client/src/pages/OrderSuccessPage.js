@@ -15,7 +15,6 @@ function OrderSuccessPage() {
   const dispatch = useDispatch();
   const [paymentStatus, setPaymentStatus] = useState('loading');
   const [paymentError, setPaymentError] = useState(null);
-  const [debugInfo, setDebugInfo] = useState('');
 
   useEffect(() => {
     console.log('OrderSuccessPage mounted');
@@ -26,8 +25,6 @@ function OrderSuccessPage() {
       try {
         const paymentIntent = searchParams.get('payment_intent');
         const paymentIntentClientSecret = searchParams.get('payment_intent_client_secret');
-        
-        setDebugInfo(`Payment Intent: ${paymentIntent ? 'Found' : 'Not found'}, Client Secret: ${paymentIntentClientSecret ? 'Found' : 'Not found'}`);
         
         if (paymentIntent && paymentIntentClientSecret) {
           // This is a Stripe redirect
@@ -115,14 +112,6 @@ function OrderSuccessPage() {
         />
         <main className="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
           <div className="text-center max-w-2xl">
-            {/* Debug info */}
-            <div className="mb-4 p-2 bg-gray-100 text-xs text-left rounded">
-              <strong>Debug Info:</strong><br/>
-              Order ID: {params?.id}<br/>
-              Payment Status: {paymentStatus}<br/>
-              {debugInfo}<br/>
-              URL: {window.location.href}
-            </div>
             
             {paymentStatus === 'processing' || paymentStatus === 'loading' ? (
               <>
