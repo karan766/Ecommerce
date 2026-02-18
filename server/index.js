@@ -33,30 +33,38 @@ const PORT = process.env.PORT || 8080;
 const app = express();
 
 // CORS configuration - explicit for production
-const corsOptions = {
-  origin: [
-    'https://ecommerce-x9jr.onrender.com',
-    'http://localhost:3000',
-    'http://localhost:3001'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
-  optionsSuccessStatus: 200
-};
+// 
+const allowedOrigins = [
+  "https://ecommerce-x9jr.onrender.com",
+  "http://localhost:3000",
+  "http://localhost:3001"
+];
 
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
 
-// Handle preflight requests explicitly
-app.options('*', cors(corsOptions));
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, origin); // IMPORTANT: return exact origin
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
 
 // Add debugging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
   next();
 });
-app.use(express.json());
 dotenv.config();
+app.use(express.json());
+
 
 // Health check endpoint
 app.get('/health', (req, res) => {
