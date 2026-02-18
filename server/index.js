@@ -32,40 +32,36 @@ const PORT = process.env.PORT || 8080;
 
 const app = express();
 
-// CORS configuration for production deployment
+// CORS configuration - permissive for deployment debugging
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      process.env.CLIENT_URL
-    ].filter(Boolean); // Remove undefined values
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Allow all origins for now
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
+// Add debugging middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+  next();
+});
 app.use(express.json());
 dotenv.config();
 
-// Validate required environment variables
+// Validate required environment variables (but don't exit in production)
 const requiredEnvVars = ['MONGO_URL', 'SECRET_KEY'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
   console.error('Missing required environment variables:', missingEnvVars);
-  process.exit(1);
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
 }
 
 const opts = {
@@ -278,6 +274,18 @@ app.get("/health", (req, res) => {
     status: "OK", 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+app.get("/debug", (req, res) => {
+  res.json({
+    origin: req.get('Origin'),
+    headers: req.headers,
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      CLIENT_URL: process.env.CLIENT_URL,
+      PORT: process.env.PORT
+    }
   });
 });
 
