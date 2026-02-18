@@ -257,11 +257,10 @@ app.post('/webhook', express.raw({type: 'application/json'}), (request, response
   }
 });
 
-
 connectDB();
 
 // Seed default makes
-seedMakes();
+// seedMakes();
 
 
 
