@@ -13,6 +13,7 @@ import {
   selectLoggedInUser,
   selectUserChecked,
 } from "./features/auth/authSlice";
+import EnvChecker from "./components/EnvChecker";
 import { fetchItemsByUserIdAsync } from "./features/cart/cartSlice";
 import PageNotFound from "./pages/404";
 import OrderSuccessPageSimple from "./pages/OrderSuccessPageSimple";
@@ -172,6 +173,7 @@ function App() {
 
   return (
     <>
+      <EnvChecker />
       <div className="App">
         {userChecked && (
           <>
