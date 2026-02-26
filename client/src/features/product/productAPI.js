@@ -1,9 +1,9 @@
-
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 export function fetchProductById(id) {
   return new Promise(async (resolve, reject) => {
 
-    const response = await fetch("/products/" + id);
+    const response = await fetch(`${API_BASE_URL}/products/${id}`);
     const data = await response.json();
     if (response.ok) {
       resolve({ data });
@@ -17,7 +17,7 @@ export function fetchProductById(id) {
 export async function createProduct(product) {
   try {
    
-    const response = await fetch("/products/", {
+    const response = await fetch(`${API_BASE_URL}/products/`, {
       method: "POST",
       body: JSON.stringify(product),
       headers: { "Content-Type": "application/json" },
@@ -38,7 +38,7 @@ export async function createProduct(product) {
 export function updateProduct(update) {
   return new Promise(async (resolve) => {
     const response = await fetch(
-      "/products/" + update.id,
+      `${API_BASE_URL}/products/${update.id}`,
       {
         method: "PATCH",
         body: JSON.stringify(update),
@@ -76,7 +76,7 @@ export function fetchProductsByFilters(filter, sort, pagination, Admin) {
   return new Promise(async (resolve) => {
 
     const response = await fetch(
-      "/products?" + queryString+"isAdmin=true"
+      `${API_BASE_URL}/products?${queryString}isAdmin=true`
     );
     const data = await response.json();
     const totalItems = data.totalProducts;
@@ -86,7 +86,7 @@ export function fetchProductsByFilters(filter, sort, pagination, Admin) {
 
 export function fetchCategories() {
   return new Promise(async (resolve) => {
-    const response = await fetch("/category");
+    const response = await fetch(`${API_BASE_URL}/category`);
     const data = await response.json();
     resolve({ data });
   });
@@ -94,7 +94,7 @@ export function fetchCategories() {
 
 export function fetchBrands() {
   return new Promise(async (resolve) => {
-    const response = await fetch("/brands");
+    const response = await fetch(`${API_BASE_URL}/brands`);
     const data = await response.json();
     resolve({ data });
   });
@@ -102,7 +102,7 @@ export function fetchBrands() {
 
 export function fetchMakes() {
   return new Promise(async (resolve) => {
-    const response = await fetch("/makes");
+    const response = await fetch(`${API_BASE_URL}/makes`);
     const data = await response.json();
     resolve({ data });
   });
@@ -111,7 +111,7 @@ export function fetchMakes() {
 export function createMake(make) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch("/makes", {
+      const response = await fetch(`${API_BASE_URL}/makes`, {
         method: "POST",
         body: JSON.stringify(make),
         headers: { "Content-Type": "application/json" },
@@ -131,7 +131,7 @@ export function createMake(make) {
 export function createBrand(brand) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch("/brands", {
+      const response = await fetch(`${API_BASE_URL}/brands`, {
         method: "POST",
         body: JSON.stringify(brand),
         headers: { "Content-Type": "application/json" },
@@ -151,7 +151,7 @@ export function createBrand(brand) {
 export function createCategory(category) {
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch("/category", {
+      const response = await fetch(`${API_BASE_URL}/category`, {
         method: "POST",
         body: JSON.stringify(category),
         headers: { "Content-Type": "application/json" },

@@ -2,8 +2,6 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./utils/connectDB.js";
-import { seedMakes } from "./utils/seedMakes.js";
-import { seedProducts } from "./utils/seedProducts.js";
 import ProductRouter from "./routes/ProductRoutes.js";
 import BrandRouter from "./routes/BrandRoutes.js";
 import CategoryRouter from "./routes/CategoryRoutes.js";
@@ -124,9 +122,9 @@ app.use(express.static(path.resolve(__dirname, 'build')));
 app.use(cookieParser());
 app.use(express.raw({type:"application/json"}));
 app.use("/products", ProductRouter);
-app.use("/brands",isAuth(), BrandRouter);
-app.use("/category",isAuth(), CategoryRouter);
-app.use("/makes",isAuth(), MakeRouter);
+app.use("/brands", BrandRouter);
+app.use("/category", CategoryRouter);
+app.use("/makes", MakeRouter);
 app.use("/users",isAuth(), UserRouter);
 app.use("/auth", AuthRouter);
 app.use("/cart",isAuth(), CartRouter);
@@ -282,12 +280,6 @@ app.post('/webhook', express.raw({type: 'application/json'}), (request, response
 
 connectDB();
 
-// Seed default data
-seedMakes();
-seedProducts();
-
-
-
 app.get("/", (req, res) => {
   res.json({ status: 200, message: "Hello World!" });
 });
@@ -313,9 +305,12 @@ app.get("/debug", (req, res) => {
 });
 
 // Catch-all handler: send back React's index.html file for any non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
-});
+// Only in production when serving frontend from same server
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
+  });
+}
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

@@ -33,12 +33,18 @@ export default function ProductDetail() {
   const status = useSelector(selectStatus);
   const [selectedColor, setSelectedColor] = useState();
   const [selectedSize, setSelectedSize] = useState();
+  const [quantity, setQuantity] = useState(1);
 
   const handleCart = (e) => {
     e.preventDefault();
 
     if (product.stock < 1) {
       toast.error(`${product.title} is out of stock`);
+      return;
+    }
+
+    if (quantity > product.stock) {
+      toast.error(`Only ${product.stock} items available in stock`);
       return;
     }
 
@@ -49,15 +55,23 @@ export default function ProductDetail() {
     if (!productExistsInCart) {
       const newItem = {
         product: product.id,
-        quantity: 1,
+        quantity: quantity,
         size: product.sizes[selectedSize],
         color: product.colors[selectedColor],
         price: discountedPrice(product),
       };
       dispatch(addToCartAsync(newItem));
-      toast.success(`${product.title} added to cart`);
+      toast.success(`${quantity} x ${product.title} added to cart`);
     } else {
       toast.error("Product already in cart");
+    }
+  };
+
+  const handleQuantityChange = (type) => {
+    if (type === 'increment' && quantity < product.stock) {
+      setQuantity(quantity + 1);
+    } else if (type === 'decrement' && quantity > 1) {
+      setQuantity(quantity - 1);
     }
   };
 
@@ -211,16 +225,16 @@ export default function ProductDetail() {
                     <div className="flex items-center space-x-3">
                       {product.colors.map((color, index) => (
                         <RadioGroup.Option
-                          key={color}
+                          key={`color-${index}`}
                           value={color}
                           onClick={() => setSelectedColor(index)}
                           className={`aspect-square h-8 w-8 rounded-full border border-black border-opacity-10 relative flex cursor-pointer items-center justify-center p-0.5 focus:outline-none ${
                             index === selectedColor ? "ring ring-offset-1" : ""
                           }`}
-                          style={{ backgroundColor: color }}
+                          style={{ backgroundColor: color.value || color }}
                         >
                           <RadioGroup.Label as="span" className="sr-only">
-                            {color}
+                            {color.name || color}
                           </RadioGroup.Label>
                         </RadioGroup.Option>
                       ))}
@@ -238,7 +252,7 @@ export default function ProductDetail() {
                     <div className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4">
                       {product.sizes.map((size, index) => (
                         <RadioGroup.Option
-                          key={size.name}
+                          key={`size-${index}-${size.name}`}
                           value={size.name}
                           onClick={() => setSelectedSize(index)}
                           className={`group relative flex items-center justify-center rounded-md border px-4 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-4 cursor-pointer ${
@@ -254,12 +268,54 @@ export default function ProductDetail() {
                   </RadioGroup>
                 </div> }
 
+                {/* Quantity Selector */}
+                <div className="mt-10">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-gray-900">Quantity</h3>
+                    <p className="text-sm text-gray-500">
+                      {product.stock > 0 ? `${product.stock} available` : 'Out of stock'}
+                    </p>
+                  </div>
+                  <div className="mt-4 flex items-center space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => handleQuantityChange('decrement')}
+                      disabled={quantity <= 1}
+                      className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    >
+                      <span className="text-xl">−</span>
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      max={product.stock}
+                      value={quantity}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (value >= 1 && value <= product.stock) {
+                          setQuantity(value);
+                        }
+                      }}
+                      className="w-20 text-center border border-gray-300 rounded-md py-2 text-base font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleQuantityChange('increment')}
+                      disabled={quantity >= product.stock}
+                      className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    >
+                      <span className="text-xl">+</span>
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   onClick={handleCart}
                   type="submit"
-                  className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-amber-500 px-8 py-3 text-base font-medium text-white hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+                  disabled={product.stock < 1}
+                  className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-amber-500 px-8 py-3 text-base font-medium text-white hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Add to Cart
+                  {product.stock < 1 ? 'Out of Stock' : 'Add to Cart'}
                 </button>
               </form> 
             </div>
@@ -278,8 +334,8 @@ export default function ProductDetail() {
                 <h3 className="text-sm font-medium text-gray-900">Highlights</h3>
                 <div className="mt-4">
                   <ul className="list-disc space-y-2 pl-4 text-sm">
-                    {product.highlights.map((highlight) => (
-                      <li key={highlight} className="text-gray-400">
+                    {product.highlights.map((highlight, index) => (
+                      <li key={`highlight-${index}`} className="text-gray-400">
                         <span className="text-gray-600">{highlight}</span>
                       </li>
                     ))}

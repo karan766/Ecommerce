@@ -50,12 +50,17 @@ function OrderSuccessPage() {
     verifyPayment();
 
     // Reset cart and current order
-    try {
-      dispatch(resetCartAsync());
-      dispatch(resetOrder());
-    } catch (error) {
-      console.error('Error resetting cart/order:', error);
-    }
+    const resetCartAndOrder = async () => {
+      try {
+        await dispatch(resetCartAsync()).unwrap();
+        dispatch(resetOrder());
+        console.log('Cart and order reset successfully');
+      } catch (error) {
+        console.error('Error resetting cart/order:', error);
+      }
+    };
+
+    resetCartAndOrder();
   }, [dispatch, searchParams, params]);
 
   // Add error boundary

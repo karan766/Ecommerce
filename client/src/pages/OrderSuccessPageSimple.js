@@ -1,12 +1,31 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { resetCartAsync } from "../features/cart/cartSlice";
+import { resetOrder } from "../features/order/orderSlice";
 
 function OrderSuccessPageSimple() {
   const params = useParams();
   const [searchParams] = useSearchParams();
+  const dispatch = useDispatch();
   
   const paymentIntent = searchParams.get('payment_intent');
   const isStripePayment = !!paymentIntent;
+
+  useEffect(() => {
+    // Reset cart and order when order success page loads
+    const resetCartAndOrder = async () => {
+      try {
+        await dispatch(resetCartAsync()).unwrap();
+        dispatch(resetOrder());
+        console.log('Cart and order reset successfully');
+      } catch (error) {
+        console.error('Error resetting cart/order:', error);
+      }
+    };
+
+    resetCartAndOrder();
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">

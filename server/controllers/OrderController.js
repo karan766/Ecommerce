@@ -16,6 +16,7 @@ export const fetchOrderByUser = async (req, res) => {
 
 export const createOrder = async (req, res) => {
   try {
+    // Update product stock
     for (let product = 0; product < req.body.items.length; product++) {
       await Product.findByIdAndUpdate(
         req.body.items[product].product.id,
@@ -27,11 +28,20 @@ export const createOrder = async (req, res) => {
         }
       );
     }
+    
+    // Create the order
     const order = await Order.create(req.body);
     const doc = await Order.findById(order._id).populate();
-    const user = await User.findById(order.user)
-       // we can use await for this also 
-       sendEMail({to:user.email,html:invoiceTemplate(order),subject:'Order Received' })
+    const user = await User.findById(order.user);
+    
+    // Clear the user's cart after successful order creation
+    const Cart = (await import("../models/CartModel.js")).default;
+    await Cart.deleteMany({ user: order.user });
+    console.log(`Cart cleared for user ${order.user}`);
+    
+    // Send confirmation email
+    sendEMail({to:user.email,html:invoiceTemplate(order),subject:'Order Received' });
+    
     res.status(201).json(doc);
   } catch (error) {
     res.status(400).json({ message: error.message });
