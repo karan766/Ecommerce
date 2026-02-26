@@ -226,15 +226,15 @@ export default function ProductDetail() {
                       {product.colors.map((color, index) => (
                         <RadioGroup.Option
                           key={`color-${index}`}
-                          value={color}
+                          value={index}
                           onClick={() => setSelectedColor(index)}
                           className={`aspect-square h-8 w-8 rounded-full border border-black border-opacity-10 relative flex cursor-pointer items-center justify-center p-0.5 focus:outline-none ${
                             index === selectedColor ? "ring ring-offset-1" : ""
                           }`}
-                          style={{ backgroundColor: color.value || color }}
+                          style={{ backgroundColor: typeof color === 'string' ? color : color.value }}
                         >
                           <RadioGroup.Label as="span" className="sr-only">
-                            {color.name || color}
+                            {typeof color === 'string' ? color : color.name}
                           </RadioGroup.Label>
                         </RadioGroup.Option>
                       ))}
