@@ -53,11 +53,14 @@ export default function ProductDetail() {
     );
 
     if (!productExistsInCart) {
+      const selectedColorValue = product.colors[selectedColor];
+      const selectedSizeValue = product.sizes[selectedSize];
+      
       const newItem = {
         product: product.id,
         quantity: quantity,
-        size: product.sizes[selectedSize],
-        color: product.colors[selectedColor],
+        size: typeof selectedSizeValue === 'object' ? selectedSizeValue.name : selectedSizeValue,
+        color: typeof selectedColorValue === 'object' ? selectedColorValue.name : selectedColorValue,
         price: discountedPrice(product),
       };
       dispatch(addToCartAsync(newItem));
