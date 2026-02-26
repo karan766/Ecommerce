@@ -31,8 +31,8 @@ export default function ProductDetail() {
   const product = useSelector(selectProductById);
   const items = useSelector(selectItems);
   const status = useSelector(selectStatus);
-  const [selectedColor, setSelectedColor] = useState();
-  const [selectedSize, setSelectedSize] = useState();
+  const [selectedColor, setSelectedColor] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
   const handleCart = (e) => {
@@ -53,14 +53,14 @@ export default function ProductDetail() {
     );
 
     if (!productExistsInCart) {
-      const selectedColorValue = product.colors[selectedColor];
-      const selectedSizeValue = product.sizes[selectedSize];
+      const selectedColorValue = product.colors.length > 0 ? product.colors[selectedColor] : null;
+      const selectedSizeValue = product.sizes.length > 0 ? product.sizes[selectedSize] : null;
       
       const newItem = {
         product: product.id,
         quantity: quantity,
-        size: typeof selectedSizeValue === 'object' ? selectedSizeValue.name : selectedSizeValue,
-        color: typeof selectedColorValue === 'object' ? selectedColorValue.name : selectedColorValue,
+        size: selectedSizeValue ? (typeof selectedSizeValue === 'object' ? selectedSizeValue.name : selectedSizeValue) : null,
+        color: selectedColorValue ? (typeof selectedColorValue === 'object' ? selectedColorValue.name : selectedColorValue) : null,
         price: discountedPrice(product),
       };
       dispatch(addToCartAsync(newItem));
